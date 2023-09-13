@@ -6,7 +6,7 @@ Resources:
     Properties:
       ImageId: ami-0ff8a91507f77f867
       InstanceType: t2.micro
-      KeyName: testkey
+      KeyName: testwordpres
       BlockDeviceMappings:
         - DeviceName: /dev/sdm
           Ebs:
