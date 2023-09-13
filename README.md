@@ -1,1 +1,1 @@
-# Aws-Cloudformation-deploy-ec2
+# Aws-Cloudformation-deploy
