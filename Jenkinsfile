@@ -1,18 +1,23 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()    // 👈 Indispensable pour le déclenchement automatique
+    }
+
     stages {
         stage('Git Checkout') {
             steps {
-                echo "Nouveau test déclenché automatiquement !"
+                echo "Mis à jour récupération du code depuis GitHub"
                 checkout scm
             }
         }
 
         stage('Test') {
             steps {
-                echo "Test fictif en cours..."
+                echo "Exécution de tests fictifs"
             }
         }
     }
 }
+
