@@ -1,8 +1,10 @@
 pipeline {
     agent any
 
-    triggers {
-        githubPush()
+    environment {
+        IMAGE_NAME = "mon-image-docker"
+        CONTAINER_NAME = "mon-conteneur-jenkins"
+        TAG = "latest"
     }
 
     stages {
@@ -13,42 +15,41 @@ pipeline {
             }
         }
 
-        stage('Install AWS CLI & Validate CF Template') {
+        stage('Build Docker Image') {
             steps {
-                echo "→ Validation du template CloudFormation"
-                sh '''
-                    if ! command -v aws >/dev/null 2>&1; then
-                        echo "AWS CLI non détecté. Installation..."
-                        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                        rm -rf aws
-                        unzip -o awscliv2.zip
-                        ./aws/install
-                    else
-                        echo "AWS CLI déjà installé"
-                    fi
-
-                    aws --version
-
-                    aws cloudformation validate-template \
-                      --template-body file://create_ec2_IAM_SG.yaml
-                '''
+                echo "→ Build de l'image Docker"
+                sh "docker build -t ${IMAGE_NAME}:${TAG} ."
             }
         }
 
-        stage('Test') {
+        stage('Run Docker Container') {
             steps {
-                echo "→ Exécution de tests fictifs"
-                sh 'echo "✅ Test fictif réussi"'
+                echo "→ Lancement du conteneur Docker"
+                sh "docker run -d --name ${CONTAINER_NAME} ${IMAGE_NAME}:${TAG}"
+            }
+        }
+
+        stage('Test in Container') {
+            steps {
+                echo "→ Test dans le conteneur"
+                sh "docker exec ${CONTAINER_NAME} echo 'Conteneur fonctionne !'"
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                echo "→ Nettoyage"
+                sh "docker stop ${CONTAINER_NAME} || true"
+                sh "docker rm ${CONTAINER_NAME} || true"
             }
         }
     }
 
     post {
-        success {
-            echo "✅ Pipeline terminé avec succès !"
-        }
-        failure {
-            echo "❌ Échec du pipeline"
+        always {
+            echo "→ Nettoyage final"
+            sh "docker stop ${CONTAINER_NAME} || true"
+            sh "docker rm ${CONTAINER_NAME} || true"
         }
     }
 }
