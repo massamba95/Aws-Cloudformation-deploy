@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                echo "Mis à jour récupération du code depuis GitHub"
+                echo "Mis à jour récupération"
                 checkout scm
             }
         }
